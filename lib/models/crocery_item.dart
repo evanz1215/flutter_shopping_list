@@ -1,4 +1,4 @@
-import 'package:flutter_shopping_list/model/category.dart';
+import 'package:flutter_shopping_list/models/category.dart';
 
 class GroceryItem {
   const GroceryItem({required this.id, required this.name, required this.quantity, required this.category});
