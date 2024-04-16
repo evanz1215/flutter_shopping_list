@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_shopping_list/models/crocery_item.dart';
+import 'package:flutter_shopping_list/models/grocery_item.dart';
 import 'package:flutter_shopping_list/widgets/new_item.dart';
 
 class GroceryList extends StatefulWidget {
