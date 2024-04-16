@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_shopping_list/data/categories.dart';
+import 'package:flutter_shopping_list/models/category.dart';
+import 'package:flutter_shopping_list/models/crocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -12,9 +12,20 @@ class NewItem extends StatefulWidget {
 
 class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>();
+  var _enteredName = '';
+  var _enteredQuantity = 1;
+  var _selectedCategory = categories[Categories.vegetables]!;
 
   void _saveItem() {
-    _formKey.currentState!.validate();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      Navigator.of(context).pop(GroceryItem(
+        id: DateTime.now().toString(),
+        name: _enteredName,
+        quantity: _enteredQuantity,
+        category: _selectedCategory,
+      ));
+    }
   }
 
   @override
@@ -39,6 +50,9 @@ class _NewItemState extends State<NewItem> {
                   }
                   return null;
                 },
+                onSaved: (value) {
+                  _enteredName = value!;
+                },
               ), // instead of TextField()
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -49,7 +63,10 @@ class _NewItemState extends State<NewItem> {
                         label: Text('Quantity'),
                       ),
                       keyboardType: TextInputType.number,
-                      initialValue: "1",
+                      initialValue: _enteredQuantity.toString(),
+                      onSaved: (value) {
+                        _enteredQuantity = int.parse(value!);
+                      },
                       validator: (value) {
                         // 表單驗證
                         if (value == null || value.isEmpty || int.tryParse(value) == null || int.tryParse(value)! <= 0) {
@@ -61,24 +78,31 @@ class _NewItemState extends State<NewItem> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: DropdownButtonFormField(items: [
-                      for (final category in categories.entries)
-                        DropdownMenuItem(
-                          // key: ValueKey(category.value),
-                          value: category.value,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 16,
-                                height: 16,
-                                color: category.value.color,
+                    child: DropdownButtonFormField(
+                        value: _selectedCategory,
+                        items: [
+                          for (final category in categories.entries)
+                            DropdownMenuItem(
+                              // key: ValueKey(category.value),
+                              value: category.value,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 16,
+                                    height: 16,
+                                    color: category.value.color,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(category.value.title),
+                                ],
                               ),
-                              const SizedBox(width: 6),
-                              Text(category.value.title),
-                            ],
-                          ),
-                        )
-                    ], onChanged: (value) {}),
+                            )
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategory = value!; // 因為selected category是可以被看見的，所以要用setState
+                          });
+                        }),
                   )
                 ],
               ),
