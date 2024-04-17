@@ -49,7 +49,7 @@ class _GroceryListState extends State<GroceryList> {
   }
 
   void _addNeItem() async {
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => const NewItem(),
       ),
