@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_shopping_list/data/categories.dart';
 import 'package:flutter_shopping_list/models/grocery_item.dart';
 import 'package:flutter_shopping_list/widgets/new_item.dart';
+import 'package:http/http.dart' as http;
 
 class GroceryList extends StatefulWidget {
   const GroceryList({super.key});
@@ -10,22 +14,48 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryListState extends State<GroceryList> {
-  final List<GroceryItem> _groceryItems = [];
+  var _groceryItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  void _loadItems() async {
+    final url = Uri.https('flutter-prep-974b5-default-rtdb.firebaseio.com', 'shopping-list.json');
+    final response = await http.get(url);
+    final Map<String, dynamic> listData = json.decode(response.body);
+
+    final List<GroceryItem> loadedItems = [];
+
+    for (final item in listData.entries) {
+      final itemData = item.value;
+      final category = categories.entries.firstWhere((catItem) => catItem.value.title == itemData['category']).value;
+
+      loadedItems.add(
+        GroceryItem(
+          id: item.key,
+          name: itemData["name"],
+          quantity: itemData["quantity"],
+          category: category,
+        ),
+      );
+    }
+
+    setState(() {
+      _groceryItems = loadedItems;
+    });
+  }
 
   void _addNeItem() async {
-    final newItem = await Navigator.of(context).push(
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (ctx) => const NewItem(),
       ),
     );
 
-    if (newItem == null) {
-      return;
-    }
-
-    setState(() {
-      _groceryItems.add(newItem);
-    });
+    _loadItems();
   }
 
   void _removeItem(GroceryItem item) {
