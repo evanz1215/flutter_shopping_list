@@ -16,6 +16,7 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   var _groceryItems = [];
   var _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -26,6 +27,21 @@ class _GroceryListState extends State<GroceryList> {
   void _loadItems() async {
     final url = Uri.https('flutter-prep-974b5-default-rtdb.firebaseio.com', 'shopping-list.json');
     final response = await http.get(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _error = 'Failed to fetch data. Please try again later.';
+      });
+      return;
+    }
+
+    if (response.body == 'null') {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
     final Map<String, dynamic> listData = json.decode(response.body);
 
     final List<GroceryItem> loadedItems = [];
@@ -62,7 +78,23 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _removeItem(GroceryItem item) {
+  void _removeItem(GroceryItem item) async {
+    final index = _groceryItems.indexOf(item);
+
+    setState(() {
+      _groceryItems.remove(item);
+    });
+    final url = Uri.https('flutter-prep-974b5-default-rtdb.firebaseio.com', 'shopping-list/${item.id}.json');
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      // 顯示錯誤訊息
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+    }
+
     setState(() {
       _groceryItems.remove(item);
     });
@@ -99,7 +131,13 @@ class _GroceryListState extends State<GroceryList> {
           ),
         ),
       );
-    } else {}
+    }
+
+    if (_error != null) {
+      content = Center(
+        child: Text(_error!),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
