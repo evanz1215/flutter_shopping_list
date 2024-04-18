@@ -32,10 +32,9 @@ class _GroceryListState extends State<GroceryList> {
       setState(() {
         _error = 'Failed to fetch data. Please try again later.';
       });
-      return;
     }
 
-    if (response.body == 'null') {
+    if (response.body == "null") {
       setState(() {
         _isLoading = false;
       });
